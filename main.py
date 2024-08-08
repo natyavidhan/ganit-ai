@@ -1,5 +1,7 @@
 import pygame
 
+import ocr
+
 screen = pygame.display.set_mode((1500, 900))
 pygame.display.set_caption("Ganit AI")
 running = True
@@ -7,6 +9,7 @@ running = True
 canvas = pygame.Surface((1500, 900))
 
 writing = []
+erase = []
 boxes = []
 
 boxing = False
@@ -18,10 +21,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
-    mouse_down = pygame.mouse.get_pressed()[0]
+    mouse_down = pygame.mouse.get_pressed()
 
     keys = pygame.key.get_pressed()
-    if (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) and mouse_down:
+    if (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) and mouse_down[0]:
         if not boxing:
             boxing = True
             box_init = pygame.mouse.get_pos()
@@ -32,15 +35,27 @@ while running:
         boxes.append((box_init[0], box_init[1], pos[0]-box_init[0], pos[1]-box_init[1]))
         last_boxing = False
 
-    if mouse_down and not boxing:
+    if mouse_down[0] and not boxing:
         pos = pygame.mouse.get_pos()
-        writing.append(pos)
+        writing.append((0, pos))
+
+    if mouse_down[2] and not boxing:
+        pos = pygame.mouse.get_pos()
+        writing.append((1, pos))
+
+    if keys[pygame.K_SPACE]:
+        text = ocr.ocr(canvas, boxes[0])
+        print(text)
 
     screen.fill((0, 0, 0))
     canvas.fill((25, 25, 25))
 
     for pos in writing:
-        pygame.draw.circle(canvas, (255, 255, 255), pos, 1)
+        if pos[0] == 0:
+            pygame.draw.circle(canvas, (255, 255, 255), pos[1], 1)
+        else:
+            pygame.draw.circle(canvas, (25, 25, 25), pos[1], 3)
+            
 
     if boxing:
         last_boxing = True
